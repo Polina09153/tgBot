@@ -1,77 +1,36 @@
 package org.example;
 
+import com.vdurmont.emoji.EmojiParser;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 public class Bot extends TelegramLongPollingBot {
+    ArrayList<Student> students = new ArrayList<>();
+    ArrayList<Teacher> teachers = new ArrayList<>();
+
+    String [] testsName = {"Артикли", "Модальные глаголы", "Present Tense", "Past Tense", "Future Tense", "Условные предложения"};
+    String [] tablesNames = {"articles", "modalverbs", "presenttense", "pasttense", "futuretense", "condsentence"};
+    int testID = 0;
+    String id = "";
+    Student a;
+    Test test = new Test(0);
+    String idRand = "";
+    Teacher b;
+    int idStud1 = 0;
+    int k = 0;
+    int n = 0;
     boolean f = false;
-    String var = "";
+    String url = "jdbc:mysql://localhost/engtest?serverTimezone=Europe/Moscow&useSSL=false";
+    String username = "root";
+    String password = "Azicroy45";
 
-    public void counter(String args[], SendMessage message, String var, Update update) {
-        double res = 0.0;
-        double[] num = new double[args.length];
-        for (int i = 0; i < args.length; i++) {
-            num[i] = Double.parseDouble(args[i]);
-        }
-        message.setChatId(update.getMessage().getChatId().toString());
-
-        switch (var) {
-            case ("1"): {
-                res = 5 * Math.pow(num[0], num[3] * num[4]);
-                res = res / (num[1] * num[2]);
-                res -= Math.sqrt(Math.abs(Math.pow(Math.cos(num[4]), 3)));
-                chat(message,"Вариант 1 " + "\na = " + num[0] + "\nb = " + num[1] + "\nc = " + num[2] + "\nn = " + num[3] + "\nx = " + num[4]);
-            }
-            break;
-            case ("2"): {
-                res = Math.abs(num[2] - num[3]) / Math.pow((1.0 + 2.0 * num[2]), num[0]);
-                res -= Math.pow(Math.E, Math.sqrt(1.0 + num[1]));
-                chat(message, "Вариант 2 " + "\na = " + num[0] + "\nw = " + num[1] + "\nx = " + num[2] + "\ny = " + num[3]);
-            }
-            break;
-            case ("3"): {
-                res = Math.sqrt(num[0] + num[1] * num[3] + num[2] * Math.pow(Math.abs(Math.sin(num[3])), 1.0 / 3.0));
-                chat(message, "Вариант 3 " + "\na0 = " + num[0] + "\na1 = " + num[1] + "\na2 = " + num[2] + "\nx = " + num[3]);
-            }
-            break;
-            case ("4"): {
-                res = Math.log10(Math.abs(Math.pow(num[0], 7)));
-                res += Math.atan(num[1] * num[1]);
-                res += Math.PI / Math.sqrt(Math.abs(num[0] + num[1]));
-                chat(message, "Вариант 4 " + "\na = " + num[0] + "\nx = " + num[1]);
-            }
-            break;
-            case ("5"): {
-                res = Math.pow((num[0] + num[1]), 2) / (num[2] + num[3]);
-                res += Math.pow(Math.E, Math.sqrt(num[4] + 1));
-                res = Math.pow(res, 1.0 / 5.0);
-                chat(message, "Вариант 5 " + "\na = " + num[0] + "\nb = " + num[1] + "\nc = " + num[2] + "\nd = " + num[3] + "\nx = " + num[4]);
-            }
-            break;
-            case ("6"): {
-                double a = (2.0 * Math.sin(4 * num[0]) + Math.pow(Math.cos(num[0] * num[0]), 2));
-                a = a / (3.0 * num[0]);
-                res = Math.pow(Math.E, a);
-                chat(message, "Вариант 6 " + "\nx = " + num[0]);
-            }
-            break;
-            case ("7"): {
-                res = 0.25 * (((1 + Math.pow(num[0], 2)) / (1 - num[0])) + 0.5 * Math.tan(num[0]));
-                chat(message, "Вариант 7 " + "\nx = " + num[0]);
-
-            }
-            break;
-        }
-        chat(message, "Результат: " + res);
-    }
 
     public void chat(SendMessage message, String a) {
         message.setText(a);
@@ -82,142 +41,426 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-
-
     @Override
     public void onUpdateReceived(Update update) {
-//        boolean f = false;
+
         SendMessage message = new SendMessage();
         if (update.hasMessage() && update.getMessage().hasText()) {
             message.setChatId(update.getMessage().getChatId().toString());
             String answer = update.getMessage().getText();
-            if (!f) {
-                switch (answer) {
-                    case ("/start"): {
-                        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-                        replyKeyboardMarkup.setResizeKeyboard(true);
-                        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
 
-                        //Создаем список с рядами кнопок
-                        List<KeyboardRow> keyboardRows = new ArrayList<>();
-                        //Создаем один ряд кнопок и добавляем его в список
-                        KeyboardRow row = new KeyboardRow();
-                        row.add("1");
-                        row.add("2");
-                        row.add("3");
-                        keyboardRows.add(row);
-                        row = new KeyboardRow();
-                        row.add("4");
-                        row.add("5");
-                        row.add("6");
-                        keyboardRows.add(row);
-                        row = new KeyboardRow();
-                        row.add("7");
-                        keyboardRows.add(row);
-                        //добавляем лист с одним рядом кнопок в главный объект
-                        replyKeyboardMarkup.setKeyboard(keyboardRows);
-                        message.setReplyMarkup(replyKeyboardMarkup);
-                        chat(message, "Выберете вариант (1-7)");
-                        break;
-                    }
-                    case ("1"): {
-                        chat(message, "Введите аргументы a, b, c, n, x через пробел");
+            //Ввод и проверка логина
+            if (k == 1) {
+                read();
+                for (Student i : students) {
+                    if (i.login.equals(answer)) {
+                        k = 2;
+                        id = "stud";
                         f = true;
-                        var = "1";
-                        break;
+                        this.a = new Student(i.name, i.login, i.group, i.id);
                     }
-                    case ("2"): {
-                        chat(message, "Введите аргументы a, w, x, y через пробел");
-                        f = true;
-                        var = "2";
-                        break;
-                    }
-                    case ("3"): {
-                        chat(message, "Введите аргументы a0, a1, a2, x через пробел");
-                        f = true;
-                        var = "3";
-                        break;
-                    }
-                    case ("4"): {
-                        chat(message, "Введите аргументы a, x через пробел");
-                        f = true;
-                        var = "4";
-                        break;
-                    }
-                    case ("5"): {
-                        chat(message, "Введите аргументы a, b, c, d, x через пробел");
-                        f = true;
-                        var = "5";
-                        break;
-                    }
-                    case ("6"): {
-                        chat(message, "Введите аргумент x");
-                        f = true;
-                        var = "6";
-                        break;
-                    }
-                    case ("7"): {
-                        chat(message, "Введите x");
-                        f = true;
-                        var = "7";
-                        break;
-                    }
-                    default:
-                        chat(message, "Ошибка, выберете вариант");
                 }
-            } else {
-                String [] args = answer.split(" ");
-                if (check(var, args))
-                    counter(args, message, var, update);
-                else
-                    chat(message, "Ошибка, начните заново");
-                f = false;
-                var = "";
-                chat(message, "Выберете вариант (1-7)");
+                for (Teacher i : teachers) {
+                    if (i.login.equals(answer)) {
+                        k = 2;
+                        id = "teach";
+                        f = true;
+                        this.b = new Teacher(i.name, i.login, i.id);
+                    }
+                }
+                if (!id.equals("stud") && !id.equals("teach")){
+                    chat(message, "Неверный логин! Попробуйте снова");
+                    k = 1;
+                    students = new ArrayList<>();
+                    teachers = new ArrayList<>();
+                }
+            }
+
+            if (k == 0) {
+                chat(message, "Введите логин");
+                answer = update.getMessage().getText();
+                k = 1;
+            }
+
+            //Отчет по группе
+            if (id.equals("teach") && k == 4){
+                if (!checkGroup(b.id, Integer.parseInt(answer)))
+                    chat(message,"Неверно введена группа");
+                else {
+                    for (Student i: students){
+                        if (i.group == Integer.parseInt(answer)){
+                            chat(message, i.name + ": " + "\n" + getReport(i.id));
+                        }
+                    }
+                }
+                k = 2;
+            }
+
+            //Выбор варианта
+            if (k == 2) {
+                if (id.equals("stud"))
+                    studChoose(message);
+                if (id.equals("teach"))
+                    teachChoose(message);
+
+                k = 3;
+            }
+            if (n == 10)
+                k = 6;
+
+            //Отправка вопросов
+            if (id.equals("stud") && k == 5 && n < 10 ) {
+                chat(message, n+1 + ") " + (String) test.question.get(n));
+                n += 1;
+                if (n > 1){
+                    writeDB("INSERT into testsanswers(idTests, numOfQuedtion, answer) VALUES (" + idRand + ", " + (n-1) + ", '" + answer + "')");
+                }
+            }
+
+            if (id.equals("stud") && k == 4) {
+                int n = 0;
+                for (String i : testsName){
+                    n += 1;
+                    if (answer.equals(i)){
+                        test = new Test(n);
+                        readTest(test, "SELECT * FROM " + tablesNames[n-1]);
+                        testID = n;
+                        k = 5;
+                    }
+                }
+                chat(message, "Все ответы пишутся без сокращений, необходимо лишь раскрыть скобки/вставить пропущенное слово. Отправьте + если ознакомлены.");
+            }
+            if (id.equals("stud") && answer.equals("Выбрать тест")) {
+                testStud(message);
+                k = 4;
+                Random rnd = new Random();
+                idRand = a.id + String.valueOf(rnd.nextInt(0, 100));
+            }
+
+
+            if (id.equals("stud") &&k == 6){
+                writeDB("INSERT into testsanswers(idTests, numOfQuedtion, answer) VALUES (" + idRand + ", " + (n) + ", '" + answer + "')");
+                n = 0;
+                k = 7;
+
+            }
+            //Тест
+            if (id.equals("stud") && k == 7){
+                int rez = getResult(Integer.parseInt(idRand), testID);
+                writeDB("INSERT into tests(idTests, idStudent, numOfTest, Result) VALUES (" + idRand + ", " + a.id + ", " + testID + ", " + rez + ")");
+                chat(message,"Ваш результат: " + rez + " из 10");
+                k = 3;
+                studChoose(message);
+            }
+
+            if (id.equals("stud") && answer.equals("Просмотреть отчет")) {
+                chat(message, getReport(a.id));
+                k = 3;
+            }
+
+            if (id.equals("stud") && k == 8) {
+                chat(message,getOneTestReport(a.id, Integer.parseInt(answer)));
+            }
+
+            if (id.equals("stud") && answer.equals("Просмотреть отчет по одному тесту")) {
+                chat(message, getReport(a.id));
+                chat(message,"Выеберете номер теста");
+                k = 8;
+            }
+
+
+            if (id.equals("teach") && answer.equals("Просмотреть результаты группы")) {
+                chat(message, "Введите номер группы");
+                k = 4;
+            }
+
+
+            if (id.equals("teach") && answer.equals("Просмотреть результаты одного теста ученика")) {
+                chat(message, "Введите имя, напимер Петров П.");
+                k = 5;
+            }
+
+            if (id.equals("teach") && k == 5){
+                for (Student i: students){
+                    if (i.name.equals(answer)){
+                        chat(message, i.name + ": " + "\n" + getReport(i.id));
+                        idStud1 = i.id;
+                        if (!getReport(i.id).equals("Результаты: \n" + " Не решен ни один тест"))
+                            k = 6;
+                        else
+                            k = 3;
+                    }
+                }
+            }
+            if (id.equals("teach") && k == 6){
+                chat(message, "Выберете номер теста");
+                k = 7;
+            }
+            if (id.equals("teach") && k == 7){
+                chat(message,getOneTestReport(idStud1, Integer.parseInt(answer)));
+                k = 3;
             }
         }
     }
 
-    public boolean check(String var, String [] args){
-        boolean f1 = false;
-        switch (var){
-            case ("1"):{
-                if (args.length == 5)
-                    f1 = true;
+
+    //Проверка группы
+    public boolean checkGroup(int teachID, int group){
+        ArrayList gr = new ArrayList();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM schoolgroups WHERE TeacherId = " + teachID);
+                while (resultSet.next()) {
+                    int r = resultSet.getInt(1);
+                    gr.add(r);
+                }
             }
-            case ("2"):{
-                if (args.length == 4)
-                    f1 = true;
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+        return gr.contains(group);
+    }
+
+    //Отчет по одному тесту
+    public String getOneTestReport(int studID, int numOfTest){
+        String report = "Отчет:";
+        int idTest = 0;
+        ArrayList answers = new ArrayList();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT idTests FROM tests WHERE idStudent = " + studID + " and numOfTest = " + numOfTest);
+                while (resultSet.next()) {
+                    int n = resultSet.getInt(1);
+                    idTest = n;
+                }
             }
-            case ("3"):{
-                if (args.length == 4)
-                    f1 = true;
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT answer FROM testsanswers WHERE  idTests = " + idTest);
+                while (resultSet.next()) {
+                    String s = resultSet.getString(1);
+                    answers.add(s);
+                }
             }
-            case ("4"):{
-                if (args.length == 2)
-                    f1 = true;
+
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+        String emoji_true = EmojiParser.parseToUnicode(":white_check_mark:");
+        String emoji_false = EmojiParser.parseToUnicode(":x:");
+        Test t = new Test(numOfTest);
+        readTest(t, "SELECT * FROM " + tablesNames[numOfTest-1]);
+        for (int i = 0; i < 10; i++){
+            report += "\n Вопрос: " + t.question.get(i);
+            report += "\n Ваш ответ: " + answers.get(i);
+            if (answers.get(i).equals(t.answers.get(i)))
+                report += " " + emoji_true + "\n";
+            else
+                report += " " + emoji_false + "\n";
+            report += "Правильный ответ: " + t.answers.get(i) + "\n";
+
+        }
+        return report;
+    }
+
+
+
+    //Отчет
+    public String getReport(int studID){
+        ArrayList result = new ArrayList();
+        ArrayList numOfTest = new ArrayList();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM tests WHERE idStudent = " + studID);
+                while (resultSet.next()) {
+                    int r = resultSet.getInt(4);
+                    int n = resultSet.getInt(3);
+                    result.add(r);
+                    numOfTest.add(n);
+                }
             }
-            case ("5"):{
-                if (args.length == 5)
-                    f1 = true;
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+        String report = "Результаты: ";
+        int n = 0;
+        for (Object i:numOfTest){
+            report += "\n"+ i +") " + testsName[((int) i)-1] + ": " + result.get(n) + " из 10";
+            n += 1;
+        }
+        if (result.isEmpty())
+            report += "\n Не решен ни один тест";
+        return report;
+    }
+
+
+    //Результаты теста
+    public int getResult(int idTest, int num) {
+        ArrayList answers = new ArrayList();
+        int result = 0;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT answer FROM testsanswers WHERE idTests = " + idTest);
+                while (resultSet.next()) {
+                    String answer = resultSet.getString(1);
+                    answers.add(answer);
+                }
             }
-            case ("6"):{
-                if (args.length == 1)
-                    f1 = true;
-            }
-            case ("7"):{
-                if (args.length == 1)
-                    f1 = true;
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+        Test tests = new Test(num);
+        for (int i = 0; i < 6; i++){
+            if ((i+1) == num){
+                readTest(tests, "SELECT * FROM " + tablesNames[i]);
             }
         }
-        for (int i = 0; i < args.length; i++){
-            try {
-                Double.parseDouble(args[i]);
-            } catch (NumberFormatException e) {
-                f1 = false;
-            }
+        for (int i = 0; i < 10; i++){
+            if (answers.get(i).equals(tests.answers.get(i)))
+                result += 1;
         }
-        return f1;
+        return result;
+    }
+
+    //Запись в бд
+    public void writeDB(String SQL) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                int rows = statement.executeUpdate(SQL);
+            }
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+    }
+
+    //Решить тест
+    public void testStud(SendMessage message) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
+
+        //Создаем список с рядами кнопок
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        //Создаем один ряд кнопок и добавляем его в список
+        KeyboardRow row = new KeyboardRow();
+        row.add("Артикли");
+        row.add("Модальные глаголы");
+        row.add("Present Tense");
+        keyboardRows.add(row);
+        row = new KeyboardRow();
+        row.add("Past Tense");
+        row.add("Future Tense");
+        row.add("Условные предложения");
+        keyboardRows.add(row);
+        //добавляем лист с одним рядом кнопок в главный объект
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+        message.setReplyMarkup(replyKeyboardMarkup);
+        chat(message, "Выберете тему");
+    }
+
+    //Выбор действия студента
+    public void studChoose(SendMessage message) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
+
+        //Создаем список с рядами кнопок
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        //Создаем один ряд кнопок и добавляем его в список
+        KeyboardRow row = new KeyboardRow();
+        row.add("Выбрать тест");
+        row.add("Просмотреть отчет");
+        row.add("Просмотреть отчет по одному тесту");
+        keyboardRows.add(row);
+        //добавляем лист с одним рядом кнопок в главный объект
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+        message.setReplyMarkup(replyKeyboardMarkup);
+        chat(message, "Выберете действие");
+    }
+
+    //Выбор действия преподователя
+    public void teachChoose(SendMessage message) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true); //скрываем после использования
+
+        //Создаем список с рядами кнопок
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        //Создаем один ряд кнопок и добавляем его в список
+        KeyboardRow row = new KeyboardRow();
+        row.add("Просмотреть результаты одного теста ученика");
+        row.add("Просмотреть результаты группы");
+        keyboardRows.add(row);
+        //добавляем лист с одним рядом кнопок в главный объект
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+        message.setReplyMarkup(replyKeyboardMarkup);
+        chat(message, "Выберете действие");
+    }
+
+    public void read() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM students");
+                while (resultSet.next()) {
+                    String login = resultSet.getString(2);
+                    String name = resultSet.getString(1);
+                    int group = resultSet.getInt(3);
+                    int id = resultSet.getInt(4);
+                    Student a = new Student(login, name, group, id);
+                    this.students.add(a);
+                }
+            }
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM teachers");
+                while (resultSet.next()) {
+                    String login = resultSet.getString(1);
+                    String name = resultSet.getString(2);
+                    int id = resultSet.getInt(3);
+                    Teacher a = new Teacher(name, login, id);
+                    this.teachers.add(a);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
+    }
+
+    public void readTest(Test a, String SQL) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+            try (Connection conn = DriverManager.getConnection(url, username, password)) {
+                Statement statement = conn.createStatement();
+                ResultSet resultSet = statement.executeQuery(SQL);
+                while (resultSet.next()) {
+                    String question = resultSet.getString(2);
+                    String answer = resultSet.getString(3);
+                    a.question.add(question);
+                    a.answers.add(answer);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Connection failed...");
+            System.out.println(ex);
+        }
     }
 
     @Override
@@ -229,7 +472,5 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotToken() {
         return "6184839923:AAHnW0tWjaIZoU0JcGj5LBnHCbiMDyz6QEo";
     }
-
-
-
 }
+
